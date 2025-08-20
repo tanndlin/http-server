@@ -20,8 +20,14 @@ internal static class ResponseBuilder
         return [.. headerBytes.Concat(body)];
     }
 
+    public static byte[] BuildResponse(int statusCode, string statusMessage, Dictionary<string, string> headers, string body)
+        => BuildResponse(statusCode, statusMessage, headers, Encoding.UTF8.GetBytes(body));
+
     public static byte[] BuildResponse(int statusCode, Dictionary<string, string> headers, byte[] body)
         => BuildResponse(statusCode, GetStatusMessage(statusCode), headers, body);
+
+    public static byte[] BuildResponse(int statusCode, Dictionary<string, string> headers, string body)
+        => BuildResponse(statusCode, GetStatusMessage(statusCode), headers, Encoding.UTF8.GetBytes(body));
 
     private static string GetStatusMessage(int statusCode) => statusCode switch
     {

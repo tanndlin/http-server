@@ -4,6 +4,11 @@ using Util;
 
 namespace Server;
 
+/// <summary>
+/// Handles multiple TCP Connections and creates a new instance of <see cref="T"/>
+/// for each connection to allow for stateful connection handling
+/// </summary>
+/// <typeparam name="T"></typeparam>
 public class Server<T> : IDisposable where T : IByteHandler, new()
 {
     private readonly IPEndPoint endpoint;

@@ -5,32 +5,41 @@ internal static class RequestParser
     public static Request Parse(byte[] bytes)
     {
         string data = System.Text.Encoding.UTF8.GetString(bytes);
-        string[] lines = data.Split("\n");
+        string header = data.Split("\r\n\r\n").First();
+        string[] lines = header.Split("\r\n");
+        if (lines.Length == 1)
+            throw new MalformedRequestException("Malformed request");
 
         if (!Enum.TryParse(lines[0].Split(" ")[0], out RequestMethod method))
-        {
-            throw new InvalidDataException("Unknown HTTP request method");
-        }
+            throw new NotImplementedException($"Unknown HTTP request method ({lines[0].Split(" ")[0]})");
+
 
         return method switch
         {
-            RequestMethod.GET =>
-                ParseGetRequest(lines),
-            _ => throw new NotSupportedException($"HTTP method {method} is not supported")
+            RequestMethod.GET => ParseGetRequest(lines),
+            _ => throw new NotImplementedException(), // Not possible
         };
     }
 
-    private static Request ParseGetRequest(string[] lines)
+    private static GetRequest ParseGetRequest(string[] lines)
     {
-        string[] requestLine = lines[0].Split(" ");
-        if (requestLine.Length != 3)
+        string[] methodLine = lines[0].Split(" ");
+        if (methodLine.Length != 3)
         {
-            throw new InvalidDataException("Invalid GET request format");
+            throw new MalformedRequestException("Invalid GET request format");
         }
 
-        string path = requestLine[1];
-        string httpVersion = requestLine[2];
+        string path = methodLine[1];
+        string httpVersion = methodLine[2];
         Dictionary<string, string> queryParams = new();
+        foreach (string line in lines.Skip(1))
+        {
+            var split = line.Split(": ");
+            if (split.Length <= 1)
+                throw new MalformedRequestException($"Header was malformed (header: {line})");
+
+            queryParams[split[0]] = split[1];
+        }
 
         return new GetRequest(path, queryParams);
     }

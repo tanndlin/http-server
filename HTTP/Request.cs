@@ -2,7 +2,7 @@
 
 internal enum RequestMethod
 {
-    GET
+    GET,
 }
 
 internal class Request

@@ -2,28 +2,33 @@
 
 namespace HTTP;
 
+/// <summary>
+/// HTTP is a stateless protocol so all methods will be static
+/// </summary>
 public class HTTPConnection : IByteHandler
 {
-    public HTTPConnection()
-    {
-        Console.WriteLine("HTTP Connection created");
-    }
-
-    public byte[] HandleRequest(byte[] bytes)
+    public static byte[] HandleRequest(byte[] bytes)
     {
         Console.WriteLine("Got data");
         Console.WriteLine(System.Text.Encoding.UTF8.GetString(bytes));
         Console.WriteLine();
 
-        Request req = RequestParser.Parse(bytes);
-        return req.method switch
+        try
         {
-            RequestMethod.GET => HandleGetRequest((GetRequest)req),
-            _ => throw new NotSupportedException($"HTTP method {req.method} is not supported")
-        };
+            Request req = RequestParser.Parse(bytes);
+            return req.method switch
+            {
+                RequestMethod.GET => HandleGetRequest((GetRequest)req),
+                _ => throw new NotSupportedException($"HTTP method {req.method} is not supported")
+            };
+        }
+        catch (Exception e)
+        {
+            return ResponseBuilder.BuildResponse(400, [], e.Message);
+        }
     }
 
-    private byte[] HandleGetRequest(GetRequest getRequest)
+    private static byte[] HandleGetRequest(GetRequest getRequest)
     {
         Console.WriteLine("Handling GET request");
 
@@ -40,7 +45,7 @@ public class HTTPConnection : IByteHandler
             {
                 { "Content-Type", "text/plain" },
                 { "Connection", "close" }
-            }, System.Text.Encoding.UTF8.GetBytes("404 Not Found"));
+            }, "404 Not Found");
         }
 
         byte[] content = File.ReadAllBytes(path);
