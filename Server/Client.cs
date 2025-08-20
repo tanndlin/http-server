@@ -1,8 +1,8 @@
 ﻿using System.Net.Sockets;
 
-namespace HTTPServer;
+namespace Server;
 
-internal struct Client
+internal readonly struct Client
 {
     public readonly TcpClient client;
     public readonly Thread listenThread;
