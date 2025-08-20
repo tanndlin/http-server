@@ -51,7 +51,7 @@ internal static class ResponseBuilder
             ".jpg" or ".jpeg" => "image/jpeg",
             ".gif" => "image/gif",
             ".svg" => "image/svg+xml",
-            _ => "application/octet-stream"
+            _ => throw new MalformedRequestException($"Unexpected file type in GET Request (ext: {Path.GetExtension(filePath).ToLower()})")
         };
     }
 }
