@@ -7,7 +7,7 @@ internal class GetRequest : Request
     public readonly Dictionary<string, string> queryParams;
     public GetRequest(string path, Dictionary<string, string> queryParams) : base(RequestMethod.GET)
     {
-        this.path = path;
+        this.path = path == "/" ? "/index" : path;
         this.queryParams = queryParams;
     }
 

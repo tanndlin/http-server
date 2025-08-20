@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Util;
+﻿using Util;
 
 namespace HTTP;
 
@@ -28,16 +27,28 @@ public class HTTPConnection : IByteHandler
     {
         Console.WriteLine("Handling GET request");
 
-        string page = "Hello World!";
-        byte[] content = Encoding.UTF8.GetBytes(page);
-        int contentLength = content.Length;
+        string requestPath = getRequest.path.TrimStart('/');
+        // Check if the path has an extension
+        if (!Path.HasExtension(requestPath))
+            requestPath += ".html"; // Default to .html if no extension is provided
 
-        StringBuilder resBuilder = new("HTTP/1.1 200 OK\r\n");
-        resBuilder.Append("Content-Type: text/plain\r\n");
-        resBuilder.Append($"Content-Length: {contentLength}\r\n");
-        resBuilder.Append("Connection: keep-alive\r\n");
-        resBuilder.Append("\r\n");
-        return [.. Encoding.UTF8.GetBytes(resBuilder.ToString()).Concat(content)];
+
+        string path = Path.Combine(Directory.GetCurrentDirectory(), requestPath);
+        if (!File.Exists(path))
+        {
+            return ResponseBuilder.BuildResponse(404, new Dictionary<string, string>
+            {
+                { "Content-Type", "text/plain" },
+                { "Connection", "close" }
+            }, System.Text.Encoding.UTF8.GetBytes("404 Not Found"));
+        }
+
+        byte[] content = File.ReadAllBytes(path);
+        return ResponseBuilder.BuildResponse(200, new Dictionary<string, string>
+            {
+                { "Content-Type", ResponseBuilder.GetContentType(path) },
+                { "Connection", "keep-alive" }
+            }, content);
     }
 
     public byte[] HandleBytes(byte[] bytes) => HandleRequest(bytes);
